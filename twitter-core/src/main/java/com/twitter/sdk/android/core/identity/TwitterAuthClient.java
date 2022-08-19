@@ -28,6 +28,7 @@ import com.twitter.sdk.android.core.TwitterAuthConfig;
 import com.twitter.sdk.android.core.TwitterAuthException;
 import com.twitter.sdk.android.core.TwitterCore;
 import com.twitter.sdk.android.core.TwitterException;
+import com.twitter.sdk.android.core.TwitterSSOAuthException;
 import com.twitter.sdk.android.core.TwitterSession;
 import com.twitter.sdk.android.core.models.User;
 
@@ -95,8 +96,15 @@ public class TwitterAuthClient {
 
     private void handleAuthorize(Activity activity, Callback<TwitterSession> callback) {
         final CallbackWrapper callbackWrapper = new CallbackWrapper(sessionManager, callback);
-        if (!authorizeUsingSSO(activity, callbackWrapper)
-                && !authorizeUsingOAuth(activity, callbackWrapper)) {
+
+        boolean authorizeResult;
+        if (SSOAuthHandler.isAvailable(activity)) {
+            authorizeResult = authorizeUsingSSO(activity, callbackWrapper);
+        } else {
+            authorizeResult = authorizeUsingOAuth(activity, callbackWrapper);
+        }
+
+        if (!authorizeResult && callback != null) {
             callbackWrapper.failure(new TwitterAuthException("Authorize failed."));
         }
     }
@@ -109,13 +117,27 @@ public class TwitterAuthClient {
     }
 
     private boolean authorizeUsingSSO(Activity activity, CallbackWrapper callbackWrapper) {
-        if (SSOAuthHandler.isAvailable(activity)) {
-            Twitter.getLogger().d(TwitterCore.TAG, "Using SSO");
-            return authState.beginAuthorize(activity,
-                    new SSOAuthHandler(authConfig, callbackWrapper, authConfig.getRequestCode()));
-        } else {
-            return false;
-        }
+        Twitter.getLogger().d(TwitterCore.TAG, "Using SSO");
+        Callback<TwitterSession> ssoCallbackWrapper = new Callback<TwitterSession>() {
+            @Override
+            public void success(Result<TwitterSession> result) {
+                callbackWrapper.success(result);
+            }
+
+            @Override
+            public void failure(TwitterException exception) {
+                if (exception instanceof TwitterSSOAuthException) {
+                    authState.endAuthorize();
+                    if (!authorizeUsingOAuth(activity, callbackWrapper)) {
+                        callbackWrapper.failure(new TwitterAuthException("Authorize failed."));
+                    }
+                    return;
+                }
+                callbackWrapper.failure(exception);
+            }
+        };
+        return authState.beginAuthorize(activity,
+                new SSOAuthHandler(authConfig, ssoCallbackWrapper, authConfig.getRequestCode()));
     }
 
     private boolean authorizeUsingOAuth(Activity activity, CallbackWrapper callbackWrapper) {
