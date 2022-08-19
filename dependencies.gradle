@@ -9,11 +9,12 @@ ext {
 
     enableTestCodeCoverage = true
     buildNumber = 'dev'
+    versionName = version
 
     dependency = [
             // Gradle plugins
             spoonGradlePlugin          : 'com.stanfy.spoon:spoon-gradle-plugin:1.0.4',
-            androidGradlePlugin        : 'com.android.tools.build:gradle:3.0.0',
+            androidGradlePlugin        : 'com.android.tools.build:gradle:4.2.1',
 
             // Mopub
             mopub                      : 'com.mopub:mopub-sdk-native-static:4.11.0@aar',
@@ -37,6 +38,7 @@ ext {
             picasso                    : 'com.squareup.picasso:picasso:2.5.2',
             supportCompatV4            : 'com.android.support:support-compat:26.1.0',
             supportCoreV4              : 'com.android.support:support-core-ui:26.1.0',
+            supportAnnotation          : 'com.android.support:support-annotations:26.1.0',
             retrofit                   : 'com.squareup.retrofit2:retrofit:2.3.0',
             retrofitMock               : 'com.squareup.retrofit2:retrofit-mock:2.3.0',
             retrofitGsonConverter      : 'com.squareup.retrofit2:converter-gson:2.3.0',

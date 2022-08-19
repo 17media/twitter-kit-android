@@ -72,6 +72,8 @@ dependencies {
         transitive = true
     }
 
+    implementation dependency.supportAnnotation
+
     testCompile dependency.mockito
     testCompile dependency.junit
     testCompile(dependency.robolectric) {
