@@ -47,6 +47,9 @@ ext {
             okHttpInterceptor          : 'com.squareup.okhttp3:logging-interceptor:3.8.0',
             design                     : 'com.android.support:design:26.1.0',
             tweetText                  : 'com.twitter:twitter-text:1.14.7',
-            recyclerview               : 'com.android.support:recyclerview-v7:26.1.0'
+            recyclerview               : 'com.android.support:recyclerview-v7:26.1.0',
+
+            // JFrog
+            jFrog                      : 'org.jfrog.buildinfo:build-info-extractor-gradle:4.24.16'
     ]
 }

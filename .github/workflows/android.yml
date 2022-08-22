@@ -1,0 +1,32 @@
+name: Android CI
+
+on:
+  push:
+    tags:
+      - 'm*.*.*'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+      - name: Deploy twitter-core to JFrog
+        env:
+          jfrogUser: ${{ secrets.jfrog_user }}
+          jfrogToken: ${{ secrets.jfrog_token }}
+        run: ./gradlew twitter-core:assembleRelease twitter-core:artifactoryPublish -p ./
+      - name: Deploy tweet-composer to JFrog
+        env:
+          jfrogUser: ${{ secrets.jfrog_user }}
+          jfrogToken: ${{ secrets.jfrog_token }}
+        run: ./gradlew tweet-composer:assembleRelease tweet-composer:artifactoryPublish -p ./
