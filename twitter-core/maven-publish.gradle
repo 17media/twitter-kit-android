@@ -1,0 +1,53 @@
+apply plugin: "com.jfrog.artifactory"
+apply plugin: "maven-publish"
+
+def JFROG_USER_NAME = System.getenv("jfrogUser")
+def JFROG_TOKEN = System.getenv("jfrogToken")
+def REPO_KEY = "live17" // should be "live17"
+def MAVEN_LOCAL_PATH = "https://live17.jfrog.io/artifactory/"  // should be "https://live17.jfrog.io/artifactory/"
+def GROUP_ID = "com.live17.sdk" // don't change this
+def ARTIFACT_ID = "twitterCore" //
+def VERSION_NAME = project.getVersion().toString() // for example : "1.0.0"
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
+}
+
+publishing {
+    publications {
+        aar(MavenPublication) {
+            groupId = GROUP_ID
+            artifactId = ARTIFACT_ID
+            version = VERSION_NAME
+            artifact(sourceJar) // 還有加這行包source code
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+
+            //generate pom nodes for dependencies
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                configurations.releaseRuntimeClasspath.allDependencies.each { dependency ->
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', dependency.group)
+                    dependencyNode.appendNode('artifactId', dependency.name)
+                    dependencyNode.appendNode('version', dependency.version)
+                }
+            }
+        }
+    }
+}
+
+artifactoryPublish {
+    publications(publishing.publications.aar)
+}
+
+artifactory {
+    contextUrl = MAVEN_LOCAL_PATH
+    publish {
+        repository {
+            repoKey = REPO_KEY
+            username = JFROG_USER_NAME
+            password = JFROG_TOKEN
+        }
+    }
+}

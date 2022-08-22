@@ -76,3 +76,5 @@ dependencies {
     }
     testCompile dependency.equalsVerifier
 }
+
+apply from: 'maven-publish.gradle'
